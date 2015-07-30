@@ -38,6 +38,14 @@
 				$scope.searchCrit.push({});
 			};
 
+			$scope.findFieldDefinition = function(fieldPath) {
+				for (var i = 0; i < $scope.searchDef.attributes.length; i++) {
+					if (fieldPath == $scope.searchDef.attributes[i].path) {
+						return $scope.searchDef.attributes[i];
+					}
+				}
+			};
+
 			schemaUtilFactory.getCompiledSchema(entityUri, 'search').success(function(data) {
 				$scope.searchDef = genericSearchFactory.parseSearchDef(data);
 				$scope.schema = data;
@@ -52,12 +60,17 @@
 				crit.map(function(c) {
 
 					if (c.attribute && c.attribute.path && c.operator.value) {
-						if (!c.value) {
-							c.value = '';
+						var fieldDef = $scope.findFieldDefinition(c.attribute.path);
+						var value = c.value;
+
+						if (!value) {
+							value = '';
+						}else if (fieldDef && fieldDef.type == 'number' && value == parseInt(value)){
+							value = parseInt(value);
 						}
 						retval.push({
 							f : c.attribute.path,
-							v : c.value,
+							v : value,
 							op : c.operator.value
 						});
 					}
